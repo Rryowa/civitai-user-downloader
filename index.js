@@ -367,7 +367,8 @@ class TagFilter {
         return str.split(',')
             .map(t => t.trim().replace(/^['"]|['"]$/g, ''))
             .filter(Boolean)
-            .map(t => new RegExp(`\\b${this.escapeRegex(t)}\\b`, 'i'));
+            // FIX: Added \d* to allow exclusions like "1girl" if you exclude "girl"
+            .map(t => new RegExp(`\\b\\d*${this.escapeRegex(t)}\\b`, 'i'));
     }
 
     parseInclusions(query) {
@@ -385,7 +386,15 @@ class TagFilter {
             } else {
                 const index = terms.length;
                 const cleanTag = token.replace(/^['"]|['"]$/g, ''); 
-                terms.push(new RegExp(`\\b${this.escapeRegex(cleanTag)}\\b`, 'i'));
+                
+                // --- THE FIX IS HERE ---
+                // \b   -> Start of word boundary
+                // \d* -> Allow optional digits (e.g., 1, 2, 10)
+                // Tag  -> The actual tag
+                // \b   -> End of word boundary
+                //terms.push(new RegExp(`\\b\\d*${this.escapeRegex(cleanTag)}\\b`, 'i'));
+		terms.push(new RegExp(`\\b\\d*${this.escapeRegex(cleanTag)}s?\\b`, 'i'));
+                
                 expression += `Terms[${index}].test(prompt)`;
             }
         });
