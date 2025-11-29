@@ -5,7 +5,7 @@ A fast, lightweight Node.js CLI tool to download images from a specific user on 
 ## 🚀 Features
 
 * **Logic Filtering:** Filter images using complex logic like `"cat OR dog"`, `"1girl AND (cat_ears OR fox_ears)"`.
-* **Smart Exclusions:** Automatically handles variations (e.g., excluding "boy" also excludes "1boy", "2boy").
+* **Smart Exclusions:** Automatically handles variations (e.g., excluding "boy" also excludes "1boy", "2boy", "boys").
 * **Persistence config:** Instead of typing flags every time, you can create a config.json in the root directory.
 * **High Performance:** Uses concurrent downloads (multi-threading) to maximize speed.
 * **Resumable/Offline Mode:** Caches metadata locally. You can re-run filters on previously fetched metadata without hitting the API again.
@@ -46,6 +46,10 @@ node index.js ArtMaster --limit 50 --concurrency 10
 ```
 
 ## Useful knowledge
+
+**Treat Space, Underscore, and Dash as the same thing:**
+"girl" equals "girls" / "1girl" / "2girl"
+"flat_chest" equals "flat chest" / "flat-chest"
 
 ### Advanced Filtering (Logic)
 

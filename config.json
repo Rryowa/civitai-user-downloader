@@ -1,9 +1,10 @@
 {
-  "tags": "futa or futanari or femboy or feminine body or perineum or otoko no ko or crossdressing or newhalf",
+  "tags": "futa or futanari or femboy or feminine body or perineum or otoko no ko or crossdressing",
   "excludeTags": "flat-chest, flat, male chest, gigantic balls, futa on male, gigantic breasts, male on knees, pectorals, beard, cum on boy, pregnant, dark skin, dark-skinned female, strap-on, public hair, pussy hair, anal hair, extra arms, extra eyes, body horror, no humans, doll joints, tan, undercut, very short hair, android, gore, political, vore, plump, blood, anthro, furry,",
+  "comment": "flat-chest, flat, male chest", 
   "nsfw": "X",
   "sort": "Newest",
-  "limit": 200,
+  "limit": 300,
   "output": "./civitai",
   "concurrency": 6,
   "quality": "HD",

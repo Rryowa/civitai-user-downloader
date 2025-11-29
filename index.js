@@ -375,13 +375,36 @@ class TagFilter {
         }
     }
 
+    // Helper to generate a robust regex for any tag
+    generateTagRegex(cleanTag) {
+        if (!cleanTag) return null;
+
+        // 1. Escape special regex characters (like ., *, +)
+        const escaped = this.escapeRegex(cleanTag);
+        
+        // 2. Treat Space, Underscore, and Dash as the same thing
+        // Example: "flat-chest" becomes "flat[\s\-_]+chest"
+        const flexible = escaped.replace(/[\s\-_]+/g, '[\\s\\-_]+');
+
+        // 3. Define Custom Boundaries
+        // Standard \b breaks on "-", so "flat-chest" matches "flat" and stops.
+        // We use Lookbehind/Lookahead to say: "The neighbor must NOT be a Letter, Number, Underscore, OR Dash".
+        const startBoundary = '(?<![a-zA-Z0-9_\\-])';
+        const endBoundary = '(?![a-zA-Z0-9_\\-])';
+
+        // 4. Combine
+        // \d* -> Matches "1girl" when filtering "girl"
+        // s?  -> Matches "girls" when filtering "girl"
+        return new RegExp(`${startBoundary}\\d*${flexible}s?${endBoundary}`, 'i');
+    }
+
     parseExclusions(str) {
         if (!str) return [];
         return str.split(',')
             .map(t => t.trim().replace(/^['"]|['"]$/g, ''))
             .filter(Boolean)
-            // FIX: Added \d* to allow exclusions like "1girl" if you exclude "girl"
-            .map(t => new RegExp(`\\b\\d*${this.escapeRegex(t)}\\b`, 'i'));
+            .map(t => this.generateTagRegex(t)) // Use the helper
+            .filter(Boolean);
     }
 
     parseInclusions(query) {
@@ -390,6 +413,7 @@ class TagFilter {
         const terms = [];
         let expression = "";
         
+        // Split by AND/OR/NOT/Parentheses, keeping delimiters
         const tokens = query.split(/\s+(AND|OR|NOT)\s+|\s*(\(|\))\s*/i).filter(t => t && t.trim());
         
         tokens.forEach(token => {
@@ -400,15 +424,14 @@ class TagFilter {
                 const index = terms.length;
                 const cleanTag = token.replace(/^['"]|['"]$/g, ''); 
                 
-                // --- THE FIX IS HERE ---
-                // \b   -> Start of word boundary
-                // \d* -> Allow optional digits (e.g., 1, 2, 10)
-                // Tag  -> The actual tag
-                // \b   -> End of word boundary
-                //terms.push(new RegExp(`\\b\\d*${this.escapeRegex(cleanTag)}\\b`, 'i'));
-		terms.push(new RegExp(`\\b\\d*${this.escapeRegex(cleanTag)}s?\\b`, 'i'));
-                
-                expression += `Terms[${index}].test(prompt)`;
+                // Use the helper here too
+                const regex = this.generateTagRegex(cleanTag);
+                if (regex) {
+                    terms.push(regex);
+                    expression += `Terms[${index}].test(prompt)`;
+                } else {
+                    expression += 'true'; // Fallback for empty/invalid tags
+                }
             }
         });
 
