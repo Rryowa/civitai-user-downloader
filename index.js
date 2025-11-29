@@ -27,7 +27,8 @@ const DEFAULTS = {
 // --- Entry Point ---
 async function main() {
     const cli = cac('civit-downloader');
-
+    
+    // <username> as the default command
     cli.command('<username>', 'Download images from a specific user')
         .option('--tags <string>', 'Filter logic (e.g. "cat OR dog")')
         .option('--exclude-tags <string>', 'Tags to exclude (e.g. "bad, ugly")')
@@ -40,11 +41,14 @@ async function main() {
         .option('--quality <string>', `SD/HD [default: ${DEFAULTS.quality}]`)
         .option('--config <path>', 'Config file', { default: 'config.json' })
         .option('--offline', 'Local cache only', { default: false })
-        .example('  $ civit-downloader ArtMaster --limit 50')
-        .example('  $ civit-downloader ArtMaster --tags "elf AND forest" --exclude-tags "goblin"')
-        .example('  $ civit-downloader ArtMaster --nsfw X --concurrency 10')
+        .example('  $ civit-downloader ArtMaster')
+        .example('  $ civit-downloader fetch ArtMaster') // Now supports both
         .action(async (username, options) => {
             try {
+                if (username.toLowerCase() === 'fetch' && cli.args.length > 0) {
+                    username = cli.args[0];
+                }
+
                 // 1. Config (Data)
                 const config = await createConfiguration(username, options);
                 logConfiguration(config);
@@ -63,7 +67,7 @@ async function main() {
         });
 
     cli.help();
-    cli.version('1.0.0'); // Good practice to add version
+    cli.version('1.0.0');
     cli.parse();
 }
 
