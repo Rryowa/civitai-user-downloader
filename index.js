@@ -27,11 +27,11 @@ const DEFAULTS = {
 // --- Entry Point ---
 async function main() {
     const cli = cac('civit-downloader');
-    
-    cli.command('fetch <username>', 'Download images from a specific user')
+
+    cli.command('<username>', 'Download images from a specific user')
         .option('--tags <string>', 'Filter logic (e.g. "cat OR dog")')
         .option('--exclude-tags <string>', 'Tags to exclude (e.g. "bad, ugly")')
-        .option('--nsfw <string>', `NSFW Level [default: ${DEFAULTS.nsfw}]`)
+        .option('--nsfw <string>', `NSFW Level (None, Soft, Mature, X) [default: ${DEFAULTS.nsfw}]`)
         .option('--sort <string>', `Sort order [default: ${DEFAULTS.sort}]`)
         .option('--limit <number>', `Max matches [default: ${DEFAULTS.limit}]`)
         .option('--output <dir>', `Output dir [default: ${DEFAULTS.output}]`)
@@ -40,21 +40,30 @@ async function main() {
         .option('--quality <string>', `SD/HD [default: ${DEFAULTS.quality}]`)
         .option('--config <path>', 'Config file', { default: 'config.json' })
         .option('--offline', 'Local cache only', { default: false })
+        .example('  $ civit-downloader ArtMaster --limit 50')
+        .example('  $ civit-downloader ArtMaster --tags "elf AND forest" --exclude-tags "goblin"')
+        .example('  $ civit-downloader ArtMaster --nsfw X --concurrency 10')
         .action(async (username, options) => {
-            // 1. Config (Data)
-            const config = await createConfiguration(username, options);
-            logConfiguration(config);
+            try {
+                // 1. Config (Data)
+                const config = await createConfiguration(username, options);
+                logConfiguration(config);
 
-            // 2. Services (Logic/State)
-            const filter = new TagFilter(config.tags, config.excludeTags);
-            const cache = new MetadataCache(config.output, config.username);
-            
-            // 3. Orchestrator
-            const downloader = new CivitDownloader(config, filter, cache);
-            await downloader.run();
+                // 2. Services (Logic/State)
+                const filter = new TagFilter(config.tags, config.excludeTags);
+                const cache = new MetadataCache(config.output, config.username);
+                
+                // 3. Orchestrator
+                const downloader = new CivitDownloader(config, filter, cache);
+                await downloader.run();
+            } catch (err) {
+                console.error(colors.red(`Error: ${err.message}`));
+                process.exit(1);
+            }
         });
 
     cli.help();
+    cli.version('1.0.0'); // Good practice to add version
     cli.parse();
 }
 
